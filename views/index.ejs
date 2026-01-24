@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <h1>This is my first ejs file</h1>
+
+    <!-- ejsout -->
+
+    <h1><%= gender %></h1>
+
+
+
+
+    <!-- ejsif -->
+
+    <% if (gender=="male") { %> 
+        <h1>I am a boy</h1>
+        
+    <% } %>
+
+
+
+    <% if (gender=="male") { %>
+
+        <h1>I am a boy</h1>
+    <% } else { %>
+
+        <h1>I am a girl</h1>
+
+        <% } %>
+
+
+
+
+        <% if (gender=="male") { %>
+         
+        <% } else if (gender=="female") { %>
+
+            <% } else if (gender=='none') { %>
+
+               <% } else { %>
+                
+
+                <% } %>
+
+
+
+               
+             
+         
+     
+  </body>
+</html>
