@@ -1,7 +1,10 @@
-const express= require('express')
-const app = express()
-const dotenv = require('dotenv')
-dotenv.config()
+const express= require('express');
+const app = express();
+const ejs = require('ejs')
+app.set("view engine", 'ejs')//to use ejs view engine
+app.use(express.urlencoded({extended:true})) //body parser
+const dotenv = require('dotenv');
+dotenv.config();
 
 let products = [
     {
@@ -128,11 +131,45 @@ let products = [
 
 // app.get(path, callback)
 app.get('/', (req, res)=>{
-    res.send(products)
+    // res.send(products);
+    // res.json(products);
+
+    // res.status(200).send(products)
+
+    let dir = __dirname
+    console.log(dir);
+
+    // res.sendFile(dir+'/public/construction1.webp')
+    // res.sendFile(dir+'/index.html')
+
+    res.render('index', {gender:"female"})
     
+    
+
+    
+});
+
+app.get('/product',(req, res)=>{
+    res.render("product", {products})
 })
 
-app.get('/users',)
+app.get("/addProduct", (req, res)=>{
+    res.render('addProduct')
+})
+
+app.post("/addProduct", (req, res)=>{
+    console.log(req.body)
+    const{productName, productPrice, productQuantity, productDescription}= req.body
+
+    products.push(req.body)
+    res.render("product", {products})
+
+})
+
+app.post('/delete/:id', (req, res)=>{
+    console.log(req.params);
+    
+})
 
 
 
