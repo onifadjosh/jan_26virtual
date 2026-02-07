@@ -3,8 +3,24 @@ const app = express();
 const ejs = require('ejs')
 app.set("view engine", 'ejs')//to use ejs view engine
 app.use(express.urlencoded({extended:true})) //body parser
+app.use(express.json())
+const mongoose = require("mongoose")
 const dotenv = require('dotenv');
 dotenv.config();
+
+const UserRouter = require('./routers/user.route')
+app.use('/api/v1',UserRouter)
+
+
+mongoose.connect(process.env.DATABASE_URI)
+.then(()=>{
+    console.log("Database Connected successfully");
+    
+})
+.catch(()=>{
+    console.log('Database failed to connect');
+    
+})
 
 let products = [
     {
@@ -167,9 +183,30 @@ app.post("/addProduct", (req, res)=>{
 })
 
 app.post('/delete/:id', (req, res)=>{
-    console.log(req.params);
+    // console.log(req.params.id);
+    const {id}= req.params
+    console.log(id);
+
+    products.splice(id,1)
+    res.render("product", {products})
+})
+
+app.get('/editProduct/:id', (req, res)=>{
+    res.render("editProduct")
+})
+
+
+app.post("/editProduct/:id", (req, res)=>{
+    const{id}= req.params
+    console.log(id);
+    const{productName, productPrice, productQuantity, productDescription}= req.body
+    products.splice(id,1,req.body)
+
+    res.render("product", {products})
     
 })
+
+//button clicked(collects id and takes me to the edit screen)->inside edit screen (collect the id again from the params and also collects the object for what I am changing)-> submit button in the edit screen now performs the request to splice the item and replace with the new item I have inputted on the edit screen.
 
 
 
