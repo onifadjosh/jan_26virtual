@@ -16,7 +16,7 @@ const createUser = async (req, res) => {
       email,
       password: hashedPassword,
     });
-    const token = await jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+    const token = await jwt.sign({ id: user._id, role:user.role }, process.env.JWT_SECRET, {
       expiresIn: "5h",
     });
     res.status(201).send({
@@ -59,7 +59,7 @@ const login = async (req, res) => {
       return;
     }
 
-    const token = await jwt.sign({ id: isUser._id }, process.env.JWT_SECRET, {
+    const token = await jwt.sign({ id: isUser._id, role:isUser.role }, process.env.JWT_SECRET, {
       expiresIn: "5h",
     });
     res.status(200).send({
@@ -81,8 +81,18 @@ const login = async (req, res) => {
 };
 
 const getUsers = async (req, res) => {
+  const {id, role}= req.user
+
   try {
     let user = await UserModel.find().select("-password");
+    if(role!=="admin"){
+      res.status(403).send({
+        message:"forbidden request"
+      })
+
+      return
+    }
+
     res.status(200).send({
       message: "All users fetched successfully",
       data: user,
@@ -115,10 +125,37 @@ const deleteUser = async (req, res) => {
 //to save user, create the user with hashed password before saving it into the data base
 //Authentication and authorization
 
-const verifyUser = (req, res, next) => {
-  const token = req.headers.authorization.split(" ")[1]
+const verifyUser = async(req, res, next) => {
+  try {
+    const token = req.headers.authorization.split(" ")[1]
     ? req.headers.authorization.split(" ")[1]
     : req.headers.authorization.split(" ")[0];
+
+    console.log(token);
+    
+
+     jwt.verify(token, process.env.JWT_SECRET, function(err, decoded){
+      if(err){
+        res.status(401).send({
+          message:"user unauthorized"
+        })
+
+        return
+      }
+
+      console.log(decoded);
+      
+      req.user = decoded
+
+      next()
+    })
+  } catch (error) {
+    console.log(error);
+    res.status(401).send({
+      message:"user unauthorized"
+    })
+
+  }
 };
 
 module.exports = {
@@ -126,4 +163,5 @@ module.exports = {
   getUsers,
   deleteUser,
   login,
+  verifyUser
 };

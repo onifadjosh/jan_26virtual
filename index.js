@@ -9,7 +9,9 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 const UserRouter = require('./routers/user.route')
+const ProductRouter = require('./routers/product.route')
 app.use('/api/v1',UserRouter)
+app.use("/api/v1", ProductRouter)
 
 
 mongoose.connect(process.env.DATABASE_URI)
