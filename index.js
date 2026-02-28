@@ -1,9 +1,11 @@
 const express= require('express');
 const app = express();
 const ejs = require('ejs')
+const cors = require("cors")
 app.set("view engine", 'ejs')//to use ejs view engine
 app.use(express.urlencoded({extended:true})) //body parser
 app.use(express.json())
+app.use(cors())
 const mongoose = require("mongoose")
 const dotenv = require('dotenv');
 dotenv.config();

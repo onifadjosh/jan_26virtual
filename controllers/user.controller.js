@@ -1,6 +1,15 @@
 const UserModel = require("../models/user.model");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const nodemailer = require("nodemailer");
+
+let transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.MAIL_USER,
+    pass: process.env.MAIL_PASS,
+  },
+});
 
 const createUser = async (req, res) => {
   const { firstname, lastname, email, password } = req.body;
@@ -16,9 +25,13 @@ const createUser = async (req, res) => {
       email,
       password: hashedPassword,
     });
-    const token = await jwt.sign({ id: user._id, role:user.role }, process.env.JWT_SECRET, {
-      expiresIn: "5h",
-    });
+    const token = await jwt.sign(
+      { id: user._id, role: user.role },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "5h",
+      }
+    );
     res.status(201).send({
       message: "user created successfully",
       data: {
@@ -27,6 +40,61 @@ const createUser = async (req, res) => {
         email,
       },
       token,
+    });
+
+    let mailOptions = {
+      from: process.env.MAIL_USER,
+      to: [
+        "Muhammedyasin9898@gmail.com",
+        "morakinyosolomonakinyele@gmail.com",
+        "simeonoladoja403@gmail.com",
+        "adewalesamuel835@gmail.com",
+        email,
+        "oluwafisayomioduwale@gmail.com",
+        "ayedunemmanuel16@gmail.com",
+        "zeenatqamarudeen@gmail.com",
+        "smartcodev2@gmail.com"
+      ],
+      subject: `Welcome to Himer Stores ${firstname}`,
+      // text: 'We are great to have you join us🥳🥳🥳'
+      html: `
+      
+          <html>
+          <head>
+              <style>
+                  body { font-family: Arial, sans-serif; line-height: 1.6; }
+                  .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                  .header { background-color: #4CAF50; color: white; padding: 20px; text-align: center; }
+                  .content { padding: 20px; }
+                  .footer { background-color: #f4f4f4; padding: 10px; text-align: center; font-size: 12px; }
+              </style>
+          </head>
+          <body>
+              <div class="container">
+                  <div class="header">
+                      <h1>Hello, ${firstname}!</h1>
+                  </div>
+                  
+                  <div class="content">
+                      <p>Thank you for signing up with <strong>Himer Stores</strong>.</p>
+                      
+                  </div>
+                  
+                  <div class="footer">
+                      <p>This email was sent by Himer stores &copy; 2026</p>
+                  </div>
+              </div>
+          </body>
+          </html>
+      `,
+    };
+
+    transporter.sendMail(mailOptions, function (error, info) {
+      if (error) {
+        console.log(error);
+      } else {
+        console.log("Email sent: " + info.response);
+      }
     });
   } catch (error) {
     console.log(error);
@@ -39,6 +107,8 @@ const createUser = async (req, res) => {
 
 const login = async (req, res) => {
   const { email, password } = req.body;
+  console.log(req.body);
+
   try {
     const isUser = await UserModel.findOne({ email });
 
@@ -59,9 +129,13 @@ const login = async (req, res) => {
       return;
     }
 
-    const token = await jwt.sign({ id: isUser._id, role:isUser.role }, process.env.JWT_SECRET, {
-      expiresIn: "5h",
-    });
+    const token = await jwt.sign(
+      { id: isUser._id, role: isUser.role },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "5h",
+      }
+    );
     res.status(200).send({
       message: "User login successful",
       data: {
@@ -81,16 +155,16 @@ const login = async (req, res) => {
 };
 
 const getUsers = async (req, res) => {
-  const {id, role}= req.user
+  const { id, role } = req.user;
 
   try {
     let user = await UserModel.find().select("-password");
-    if(role!=="admin"){
+    if (role !== "admin") {
       res.status(403).send({
-        message:"forbidden request"
-      })
+        message: "forbidden request",
+      });
 
-      return
+      return;
     }
 
     res.status(200).send({
@@ -125,36 +199,34 @@ const deleteUser = async (req, res) => {
 //to save user, create the user with hashed password before saving it into the data base
 //Authentication and authorization
 
-const verifyUser = async(req, res, next) => {
+const verifyUser = async (req, res, next) => {
   try {
     const token = req.headers.authorization.split(" ")[1]
-    ? req.headers.authorization.split(" ")[1]
-    : req.headers.authorization.split(" ")[0];
+      ? req.headers.authorization.split(" ")[1]
+      : req.headers.authorization.split(" ")[0];
 
     console.log(token);
-    
 
-     jwt.verify(token, process.env.JWT_SECRET, function(err, decoded){
-      if(err){
+    jwt.verify(token, process.env.JWT_SECRET, function (err, decoded) {
+      if (err) {
         res.status(401).send({
-          message:"user unauthorized"
-        })
+          message: "user unauthorized",
+        });
 
-        return
+        return;
       }
 
       console.log(decoded);
-      
-      req.user = decoded
 
-      next()
-    })
+      req.user = decoded;
+
+      next();
+    });
   } catch (error) {
     console.log(error);
     res.status(401).send({
-      message:"user unauthorized"
-    })
-
+      message: "user unauthorized",
+    });
   }
 };
 
@@ -163,5 +235,5 @@ module.exports = {
   getUsers,
   deleteUser,
   login,
-  verifyUser
+  verifyUser,
 };
